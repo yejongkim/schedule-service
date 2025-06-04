@@ -1,16 +1,21 @@
 package com.schedule_service.service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.schedule_service.domain.Schedule;
 import com.schedule_service.dto.ScheduleDto;
 import com.schedule_service.repository.ScheduleRepository;
+
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
 
@@ -19,48 +24,38 @@ public class ScheduleService {
     }
 
     public Schedule findById(Long id) {
-        return scheduleRepository.findById(id).orElse(null);
+        return scheduleRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Schedule not found with id: " + id));
     }
 
     public Schedule create(ScheduleDto dto) {
         Schedule schedule = new Schedule();
         schedule.setTitle(dto.getTitle());
         schedule.setDetails(dto.getDetails());
+        schedule.setStartTime(dto.getStartTime());
+        schedule.setEndTime(dto.getEndTime());
+        schedule.setType(dto.getType());
         schedule.setCreatedAt(LocalDateTime.now());
         schedule.setUpdatedAt(LocalDateTime.now());
-        schedule.setAlarmTime(dto.getAlarmTime());
-        schedule.setAlarmEnabled(dto.isAlarmEnabled());
         return scheduleRepository.save(schedule);
     }
 
     public Schedule update(Long id, ScheduleDto dto) {
-        Optional<Schedule> optional = scheduleRepository.findById(id);
-        if (optional.isPresent()) {
-            Schedule schedule = optional.get();
-            schedule.setTitle(dto.getTitle());
-            schedule.setDetails(dto.getDetails());
-            schedule.setUpdatedAt(LocalDateTime.now());
-            schedule.setAlarmTime(dto.getAlarmTime());
-            schedule.setAlarmEnabled(dto.isAlarmEnabled());
-            return scheduleRepository.save(schedule);
-        }
-        return null;
+        Schedule schedule = findById(id);
+        schedule.setTitle(dto.getTitle());
+        schedule.setDetails(dto.getDetails());
+        schedule.setStartTime(dto.getStartTime());
+        schedule.setEndTime(dto.getEndTime());
+        schedule.setType(dto.getType());
+        schedule.setUpdatedAt(LocalDateTime.now());
+        return scheduleRepository.save(schedule);
     }
 
     public void delete(Long id) {
-        scheduleRepository.deleteById(id);
-    }
-
-    public Schedule setAlarm(Long id, LocalDateTime alarmTime, boolean enabled) {
-        Optional<Schedule> optional = scheduleRepository.findById(id);
-        if (optional.isPresent()) {
-            Schedule schedule = optional.get();
-            schedule.setAlarmTime(alarmTime);
-            schedule.setAlarmEnabled(enabled);
-            schedule.setUpdatedAt(LocalDateTime.now());
-            return scheduleRepository.save(schedule);
+        if (!scheduleRepository.existsById(id)) {
+            throw new EntityNotFoundException("Schedule not found with id: " + id);
         }
-        return null;
+        scheduleRepository.deleteById(id);
     }
 }
 

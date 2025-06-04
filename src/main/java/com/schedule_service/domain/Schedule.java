@@ -4,12 +4,15 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 
 @Getter
 @Setter
@@ -22,8 +25,15 @@ public class Schedule {
     private Long id;
     private String title;
     private String details;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private LocalDateTime alarmTime;
-    private boolean alarmEnabled;
+    
+    @Enumerated(EnumType.STRING)
+    private ScheduleType type;
+    
+    public YearMonth getYearMonth() {
+        return YearMonth.from(startTime);
+    }
 }
