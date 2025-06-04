@@ -61,7 +61,7 @@ public class ScheduleController {
             scheduleService.delete(id);
             return ResponseEntity.noContent().build();
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.notFound().build(); //fsdsgsgsdg
         }
     }
 }
